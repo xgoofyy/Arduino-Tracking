@@ -9,25 +9,28 @@ class App():
 
         self.root.geometry("1080x720")
         self.root.title("Mouse Tracker")
+        self.root.iconphoto(False, tk.PhotoImage(file="imgs\goofy.png"))
 
         self.frame = tk.Frame(self.root)
         self.frame.pack(fill="both", expand=True)
 
-        self.canvasWidth = 750
+        self.canvasWidth = 800
         self.canvasHeight = 540
 
         self.canvas = tk.Canvas(self.frame, width=self.canvasWidth, height=self.canvasHeight, bg="#333333", cursor="none")
         self.canvas.pack()
 
-        self.cap = cv2.VideoCapture(0)
-        self.photo = None
-        self.root.after(1, self.videoUpdate)
-
         self.cords = tk.Label(self.frame, text="", font=("Gotham-Bold", 20))
         self.cords.pack(pady=10)
         self.mousePos = (0,0)
 
+        self.cap = cv2.VideoCapture(0)
+        self.photo = None
+        self.root.after(1, self.videoUpdate)
+
         self.canvas.bind("<Motion>", self.move)
+
+        self.root.protocol("WM_DELETE_WINDOW", self.release)
 
         self.root.mainloop()
 
@@ -54,10 +57,15 @@ class App():
             self.canvas.create_line(self.canvasWidth/2, 0, self.canvasWidth/2,self.canvasHeight, fill="white", width=2) # y axis
 
             # draw crosshair
-            self.crosshairImg = PhotoImage(file="img/crosshair.png")
+            self.crosshairImg = PhotoImage(file="imgs/crosshair.png")
             self.crosshair = self.canvas.create_image(self.mousePos[0], self.mousePos[1], image=self.crosshairImg)
 
         self.root.after(1, self.videoUpdate)
+
+    def release(self):
+        self.cap.release()
+        cv2.destroyAllWindows()
+        self.root.destroy()
 
 if __name__ == "__main__":
     App()
