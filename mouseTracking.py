@@ -22,7 +22,7 @@ class App():
 
         self.cords = tk.Label(self.frame, text="", font=("Gotham-Bold", 20))
         self.cords.pack(pady=10)
-        self.mousePos = (0,0)
+        self.mousePos = (0, 0)
 
         self.cap = cv2.VideoCapture(0)
         self.photo = None
@@ -35,10 +35,10 @@ class App():
         self.root.mainloop()
 
     def move(self, e):
-        x = int(e.x - self.canvasWidth/2)
-        y = int(-(e.y - self.canvasHeight/2))
-        self.cords.config(text="x: " + str(x) + " y: " + str(y))
-    
+        x_scaled = (e.x - self.canvasWidth / 2) * 180 / (self.canvasWidth / 2)
+        y_scaled = -(e.y - self.canvasHeight / 2) * 180 / (self.canvasHeight / 2)
+
+        self.cords.config(text="x: " + str(int(x_scaled)) + " y: " + str(int(y_scaled)))
         self.mousePos = (e.x, e.y)
 
     def videoUpdate(self):
@@ -46,15 +46,15 @@ class App():
         self.crop = 50
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = cv2.resize(frame, (self.canvasWidth+(self.crop*2), self.canvasHeight))
+            frame = cv2.resize(frame, (self.canvasWidth + (self.crop * 2), self.canvasHeight))
             frame = frame[:, self.crop:-self.crop]
 
             self.photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
             self.canvas.create_image(0, 0, anchor=NW, image=self.photo)
 
             # x and y axis
-            self.canvas.create_line(0, self.canvasHeight/2, self.canvasWidth, self.canvasHeight/2, fill="white", width=2) # x axis
-            self.canvas.create_line(self.canvasWidth/2, 0, self.canvasWidth/2,self.canvasHeight, fill="white", width=2) # y axis
+            self.canvas.create_line(0, self.canvasHeight / 2, self.canvasWidth, self.canvasHeight / 2, fill="white", width=2)  # x axis
+            self.canvas.create_line(self.canvasWidth / 2, 0, self.canvasWidth / 2, self.canvasHeight, fill="white", width=2)  # y axis
 
             # draw crosshair
             self.crosshairImg = PhotoImage(file="imgs/crosshair.png")
