@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 import cv2
 from PIL import ImageTk, Image
+import pathlib
 
 class App():
     def __init__(self):
@@ -36,6 +37,8 @@ class App():
 
         self.root.protocol("WM_DELETE_WINDOW", self.release)
 
+        self.faceCLF = cv2.CascadeClassifier(str(pathlib.Path(cv2.__file__).parent.absolute() / "data/haarcascade_frontalface_default.xml"))
+
         self.root.mainloop()
 
     def move(self, e):
@@ -48,15 +51,14 @@ class App():
 
     def videoUpdate(self):
         ret, frame = self.cap.read()
-        
-        self.crop = 75 # to account for my weird webcam resolution, adjust as needed
+        self.crop = 75  # to account for my weird webcam resolution, adjust as needed
 
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.resize(frame, (self.canvasWidth + (self.crop * 2), self.canvasHeight))
             frame = frame[:, self.crop:-self.crop]
 
-            self.canvas.delete("all") # Clear canvas
+            self.canvas.delete("all")
 
             # if webcam is on "manual"
             if self.display_mode == "all":
@@ -75,6 +77,7 @@ class App():
             elif self.display_mode == "webcam_only":
                 self.photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
                 self.canvas.create_image(0, 0, anchor=NW, image=self.photo)
+                self.face_detect(frame)
 
         self.root.after(1, self.videoUpdate)
 
@@ -82,10 +85,25 @@ class App():
         if self.display_mode == "all":
             self.display_mode = "webcam_only"
             self.cords.config(text="")
-            self.canvas.delete("all")  # Clear canvas
+            self.canvas.delete("all")
+
         else:
             self.display_mode = "all"
         self.toggle_button.config(text="Auto" if self.display_mode == "all" else "Manual")
+
+    def face_detect(self, frame):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = self.faceCLF.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
+
+        for (x, y, width, height) in faces:
+            xCenter = ((2 * x) + width) / 2
+            yCenter = ((2 * y) + height) / 2
+            cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 3)
+            cv2.circle(frame, (int(xCenter), int(yCenter)), 1, (0, 0, 255), 5)
+
+        self.photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
+        self.canvas.create_image(0, 0, anchor=NW, image=self.photo)
+        self.root.update_idletasks()
 
     def release(self):
         self.cap.release()
