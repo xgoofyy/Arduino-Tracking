@@ -18,7 +18,7 @@ This application creates a graphical user interface that displays a canvas to tr
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/mouse-tracker.git
+git clone https://github.com/xgoofyy/Arduino-Tracking.git
 ```
 
 2. Navigate to the project directory:
